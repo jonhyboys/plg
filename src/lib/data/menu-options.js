@@ -8,13 +8,13 @@ export const options = [
   {
     id: 2,
     title: "Productos",
-    link: "/about",
+    link: "/products",
     icon: "about"
   },
   {
     id: 2,
     title: "Ventas",
-    link: "/about",
+    link: "/sales",
     icon: "about"
   }
 ];
