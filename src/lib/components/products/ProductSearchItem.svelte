@@ -1,53 +1,55 @@
 <script>
-  export let product;
+    import { deserialize } from "$app/forms";
 
-  function mostrarDetalle() {
-    window.dispatchEvent(new CustomEvent('show-product-detail', {
-      detail: { product }
-    }));
-  }
+    export let product;
 
-  async function eliminarProducto() {
-    const confirmacion = confirm(`¿Estás seguro de que deseas marcar como eliminado el producto "${product.name}"?`);
-    if (!confirmacion) return;
-
-    const productoEliminado = { ...product, deleted: true };
-
-    try {
-      const API_URL = window.location.hostname === 'localhost'
-        ? '/http://localhost:3000/api'
-        : import.meta.env.VITE_API_URL
-      const res = await fetch(`${API_URL}/products`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productoEliminado)
-      });
-
-      if (!res.ok) {
-        throw new Error('Error al marcar el producto como eliminado.');
-      }
-
-      alert('Producto marcado como eliminado.');
-      window.dispatchEvent(new CustomEvent('product-deleted', {
-        detail: { id: product.id }
-      }));
-    } catch (e) {
-      alert(e.message);
+    function mostrarDetalle() {
+        window.dispatchEvent(new CustomEvent('show-product-detail', {
+            detail: { product }
+        }));
     }
-  }
+
+    async function deleteProduct(event) {
+        const confirmacion = confirm(`¿Estás seguro de que deseas eliminar el producto "${product.name}"?`);
+        if (!confirmacion) return;
+
+        let formData = new FormData();
+        formData.append('id', product.id);
+        const response = await fetch('?/delete', {
+            method: 'POST',        
+            body: formData,
+            headers: {
+                'x-sveltekit-action': 'true'
+            }
+        });
+
+        const result = deserialize(await response.text());
+        if(result.type === 'success' && result.data.success) {
+                alert('Producto eliminado.');
+                window.dispatchEvent(new CustomEvent('product-deleted', {
+                    detail: { id: product.id }
+                }));
+                return;
+        }
+        else {
+            console.log('Error al eliminar producto:', result.data.error);
+            alert('Error al eliminar el producto: ' + result.data.error);
+            return;  
+        }    
+    }
 </script>
 
 <li>
-  <div>
-    <p>
-      <strong>{product.name}</strong> | <em>{product.trade}</em> | {product.code}
-    </p>
-    <p>Precio: {product.price} | Costo: {product.cost} | Stock: {product.stock}</p>
-  </div>
-  <div class="actions">
-    <button on:click|stopPropagation={mostrarDetalle}>Editar</button>
-    <button on:click|stopPropagation={eliminarProducto}>Eliminar</button>
-  </div>
+    <div>
+        <p><strong>{product.name}</strong> (ID: {product.id})</p>
+        <p>Código de barras: {product.barcode || 'N/A'}</p>
+        <p>Precio: ${product.price.toFixed(2)}</p>
+        <p>Stock: {product.stock}</p>
+    </div>
+    <div class="actions">
+        <button onclick={mostrarDetalle}>Ver Detalle</button>
+        <button onclick={deleteProduct}>Eliminar</button>
+    </div>
 </li>
 
 <style>
@@ -65,8 +67,13 @@
     background-color: #f0f0f0;
   }
 
+  li > div:first-child {
+    display: flex;
+    flex: 1;
+  }
+
   p {
-    margin: 0 0 0.25em 0;
+    margin: 0 1em 0.25em 0;
   }
 
   .actions {

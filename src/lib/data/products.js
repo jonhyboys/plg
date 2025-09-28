@@ -1,8 +1,7 @@
 import fs from 'fs';
 
 const filePath = 'src/lib/data/products.json';
-const removeAccents = str =>
-  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const removeAccents = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 function readData() {
   if (!fs.existsSync(filePath)) return [];
@@ -44,23 +43,44 @@ function create(newProduct) {
   return { success: true, product: newProduct };
 }
 
-
 function search(text) {
-  const products = readData();
-  if (!text || text.trim() === '') return [];
+    const products = readData();
+    if (!text || text.trim() === '') return [];
+    const terms = removeAccents(text.toLowerCase()).split(/\s+/);
+    return products.filter(p => {
+        if (p.deleted) return false;
 
-  const terms = removeAccents(text.toLowerCase()).split(/\s+/);
+        const name = removeAccents((p.name || '').toLowerCase());
+        const code = removeAccents((p.code || '').toLowerCase());
 
-  return products.filter(p => {
-    if (p.deleted) return false;
-
-    const name = removeAccents((p.name || '').toLowerCase());
-    const code = removeAccents((p.code || '').toLowerCase());
-
-    return terms.every(term =>
-      name.includes(term) || code.includes(term)
-    );
-  });
+        return terms.every(term =>
+        name.includes(term) || code.includes(term)
+        );
+    });
 }
 
-export default { create, search };
+function update(productToUpdate) {
+    const products = readData();
+    const index = products.findIndex(p => p.id === productToUpdate.id);
+
+    if (index !== -1) {
+        if (productToUpdate.deleted === true) {
+            products[index].deleted = true;
+            writeData(products);
+            return {success: true, product: products[index]};
+        }
+
+        const validation = validateProduct(productToUpdate, products);
+        if (validation.valid) {
+            products[index] = productToUpdate;
+            writeData(products);
+            return {success: true, product: products[index]};
+        } else {
+            return {success: false, error: validation.error};
+        }
+    } else {
+        return {success: false, error: 'Producto no encontrado.'};
+    }
+}
+
+export default { create, search, update };

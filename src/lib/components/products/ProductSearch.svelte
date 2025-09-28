@@ -1,64 +1,63 @@
 <script>
-  import ProductSearchItem from './ProductSearchItem.svelte';
-  import { onMount } from 'svelte';
-  import { deserialize } from '$app/forms';
+    import ProductSearchItem from './ProductSearchItem.svelte';
+    import { onMount } from 'svelte';
+    import { deserialize } from '$app/forms';
 
-  let searchText = '';
-  let results = [];
-  let timeout;
-  let controller;
-  let mostrarResultados = false;
+    let searchText = '';
+    let results = [];
+    let timeout;
+    let controller;
+    let mostrarResultados = false;
 
-  async function search(event) {
-    let formData;
-    if (event){
-        event.preventDefault();
-        formData = new FormData(event.target);
-    }
-    else {
-        formData = new FormData();
-        formData.append('text', searchText);
-    }
-    if (searchText.length < 3) return;
+    async function search(event) {
+        let formData;
+        if (event){
+            event.preventDefault();
+            formData = new FormData(event.target);
+        }
+        else {
+            formData = new FormData();
+            formData.append('text', searchText);
+        }
+        if (searchText.length < 3) return;
 
-    if (controller) controller.abort();
-    controller = new AbortController();
+        if (controller) controller.abort();
+        controller = new AbortController();
+        
+        const response = await fetch('?/search', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'x-sveltekit-action': 'true'
+            },
+            signal: controller.signal
+        });
 
-    
-    const response = await fetch('?/search', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'x-sveltekit-action': 'true'
-        },
-        signal: controller.signal
-    });
-
-    const result = deserialize(await response.text());
-    if(result.data.success) {
-        results = result.data.results.slice(0, 10);
-        mostrarResultados = true;
-    } else {
-        if(result.data.error !== 'AbortError') {
-            console.error('Error al buscar productos:', result.data.error);
-            results = [];
+        const result = deserialize(await response.text());
+        if(result.data.success) {
+            results = result.data.results.slice(0, 10);
             mostrarResultados = true;
+        } else {
+            if(result.data.error !== 'AbortError') {
+                console.error('Error al buscar productos:', result.data.error);
+                results = [];
+                mostrarResultados = true;
+            }
         }
     }
-  }
 
-  function manejarInput(e) {
-    searchText = e.target.value;
+    function manejarInput(e) {
+        searchText = e.target.value;
 
-    if (/^\d{12,13}$/.test(searchText)) {
-      search();
-    } else {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        if (searchText.length >= 3) search();
-      }, 500);
+        if (/^\d{12,13}$/.test(searchText)) {
+        search();
+        } else {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            if (searchText.length >= 3) search();
+        }, 500);
+        }
     }
-  }
   
     function manejarFocus(event) {
         event.target.select();
@@ -69,16 +68,16 @@
         }
     }
 
-  onMount(() => {
-    window.addEventListener('add-sale-item', () => {
-      mostrarResultados = false;
-    });
+    onMount(() => {
+        window.addEventListener('add-sale-item', () => {
+            mostrarResultados = false;
+        });
 
-    window.addEventListener('product-deleted', () => {
-      results = [];
-      mostrarResultados = false;
+        window.addEventListener('product-deleted', () => {
+            results = [];
+            mostrarResultados = false;
+        });
     });
-  });
 </script>
 
 <div class="product-search">

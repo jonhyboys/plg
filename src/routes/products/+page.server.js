@@ -23,10 +23,22 @@ export const actions = {
 
     search: async ({ request }) => {
         const formData = await request.formData();
-        console.log(formData);
         const text = formData.get('text');
-
         const results = db.search(text);
         return { success: true, results };
+    },
+
+    delete: async ({ request }) => {
+        const formData = await request.formData();
+        const productToUpdate = {
+            id: parseInt(formData.get('id'), 10),
+            deleted: true
+        };
+        const result = db.update(productToUpdate);
+        if (result.success) {
+            return { success: true, product: result.product };
+        } else {
+            return fail(400, {error: result.error});
+        }
     }
 };

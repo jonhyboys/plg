@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "name": "Laptop",
+    "trade": "HP",
+    "description": "",
+    "cost": 120,
+    "price": 300,
+    "stock": 1,
+    "code": "",
+    "id": 1,
+    "deleted": false
+  }
+]
