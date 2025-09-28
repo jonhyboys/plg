@@ -1,6 +1,8 @@
 import fs from 'fs';
 
 const filePath = 'src/lib/data/products.json';
+const removeAccents = str =>
+  str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 function readData() {
   if (!fs.existsSync(filePath)) return [];
@@ -42,4 +44,23 @@ function create(newProduct) {
   return { success: true, product: newProduct };
 }
 
-export default { create };
+
+function search(text) {
+  const products = readData();
+  if (!text || text.trim() === '') return [];
+
+  const terms = removeAccents(text.toLowerCase()).split(/\s+/);
+
+  return products.filter(p => {
+    if (p.deleted) return false;
+
+    const name = removeAccents((p.name || '').toLowerCase());
+    const code = removeAccents((p.code || '').toLowerCase());
+
+    return terms.every(term =>
+      name.includes(term) || code.includes(term)
+    );
+  });
+}
+
+export default { create, search };

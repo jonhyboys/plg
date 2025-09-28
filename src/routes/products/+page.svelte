@@ -1,5 +1,6 @@
 <script lang="ts">
   import ProductNew from '$lib/components/products/ProductNew.svelte';
+  import ProductSearch from '$lib/components/products/ProductSearch.svelte';
 
   let creatingProduct = false;
 
@@ -23,7 +24,7 @@
         Nuevo
     </button>
 </h1>
-
+<ProductSearch />
 {#if creatingProduct}
     <ProductNew on:close={() => creatingProduct = false} />
 {/if}

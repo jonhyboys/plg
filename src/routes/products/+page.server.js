@@ -19,5 +19,14 @@ export const actions = {
         } else {
             return fail(400, {error: result.error});
         }
+    },
+
+    search: async ({ request }) => {
+        const formData = await request.formData();
+        console.log(formData);
+        const text = formData.get('text');
+
+        const results = db.search(text);
+        return { success: true, results };
     }
 };
