@@ -9,5 +9,16 @@
     "code": "",
     "id": 1,
     "deleted": false
+  },
+  {
+    "id": 2,
+    "name": "Bolígrafo",
+    "trade": "Bic",
+    "description": "Bolígrafo",
+    "cost": 0.25,
+    "price": 0.6,
+    "stock": 60,
+    "code": "12345678",
+    "deleted": false
   }
 ]

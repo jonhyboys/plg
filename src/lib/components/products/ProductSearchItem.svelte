@@ -3,7 +3,7 @@
 
     export let product;
 
-    function mostrarDetalle() {
+    function showDetail() {
         window.dispatchEvent(new CustomEvent('show-product-detail', {
             detail: { product }
         }));
@@ -47,7 +47,7 @@
         <p>Stock: {product.stock}</p>
     </div>
     <div class="actions">
-        <button onclick={mostrarDetalle}>Ver Detalle</button>
+        <button onclick={showDetail}>Ver Detalle</button>
         <button onclick={deleteProduct}>Eliminar</button>
     </div>
 </li>

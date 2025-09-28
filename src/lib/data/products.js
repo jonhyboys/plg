@@ -22,15 +22,19 @@ function validateProduct(newProduct, products) {
   if (typeof newProduct.cost !== 'number' || newProduct.cost <= 0) {
     return { valid: false, error: 'El costo debe ser mayor que cero.' };
   }
+  return { valid: true };
+}
+
+function validateNewProduct(newProduct, products) {
   if (products.some(p => p.code === newProduct.code)) {
     return { valid: false, error: 'Ya existe un producto con ese código.' };
   }
-  return { valid: true };
+  return validateProduct(newProduct, products);
 }
 
 function create(newProduct) {
   const products = readData();
-  const validation = validateProduct(newProduct, products);
+  const validation = validateNewProduct(newProduct, products);
   if (!validation.valid) {
     return { success: false, error: validation.error };
   }
